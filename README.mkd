@@ -1,0 +1,35 @@
+DESCRIPTION
+===========
+
+Rename JPEG image files like Android native camera application.
+Resulted name like this "IMG_{SHOOT DATETIME}.JPG"
+
+USAGE
+=====
+
+    $ perl rename_images.pl [--run] {TARGET}
+
+TUTORIAL
+========
+
+Rehearsal to rename on F: drive
+
+    $ perl rename_images.pl F:/DCIM
+
+This output many logs and "WHAT WILL HAPPEN".
+And if you confirmed it, execute to rename like this.
+
+    $ perl rename_images.pl --run F:/DCIM
+
+REQUIREMENTS
+============
+
+  * Image::ExifTool module.
+  * Image::EXIF::DateTime::Parser module.
+
+All modules can be obtained from CPAN or ActiveState (binary).
+
+AUTHOR
+======
+
+  * MURAOKA Taro <koron.kaoriya@gmail.com>
