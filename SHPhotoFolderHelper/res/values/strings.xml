@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
   <string name="app_name">SHPhotoFolder Helper</string>
+
+  <string name="move_to_camera">Move Photos To Camera</string>
+
 </resources>
