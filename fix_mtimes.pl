@@ -1,4 +1,7 @@
 #!/usr/local/bin/perl
+#
+# fix_mtimes.pl - Fix mtime of file based on its name.
+#
 
 use utf8;
 use strict;

@@ -1,4 +1,6 @@
 #!/usr/local/bin/perl
+#
+# show_exif_times.pl - Show date information in EXIF of a JPEG file.
 
 use utf8;
 use strict;
