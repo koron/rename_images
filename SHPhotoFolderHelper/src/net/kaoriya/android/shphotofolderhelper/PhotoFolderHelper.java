@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import android.content.Context;
 import android.media.ExifInterface;
+import android.media.MediaScannerConnection;
 import android.os.Environment;
 import android.util.Log;
 
@@ -29,6 +30,21 @@ public final class PhotoFolderHelper implements ISHPhotoFolderHelper
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat(
             "yyyyMMdd_HHmmss");
+
+    // FIXME: このメモリ馬鹿食いの構造を改める.
+    private static class MoveResults {
+        final ArrayList<String> addedPath = new ArrayList<String>();
+        final ArrayList<String> removedPath = new ArrayList<String>();
+        final ArrayList<String> movedPath = new ArrayList<String>();
+        void add(File src, File dst) {
+            String srcPath = src.getAbsolutePath();
+            String dstPath = dst.getAbsolutePath();
+            this.addedPath.add(dstPath);
+            this.movedPath.add(dstPath);
+            this.removedPath.add(srcPath);
+            this.movedPath.add(srcPath);
+        }
+    }
 
     public PhotoFolderHelper(Context context) {
         this.context = context;
@@ -52,8 +68,9 @@ public final class PhotoFolderHelper implements ISHPhotoFolderHelper
      *     4. 実行フラグチェック
      *       1. ファイル移動
      *       2. mtime変更
+     *   6. ギャラリーの一覧を更新する.
      */
-    public void moveToCamera(boolean executionFlag)
+    public int moveToCamera(boolean executionFlag)
         throws Exception
     {
         // 1. 入力フォルダと出力フォルダを決定
@@ -65,13 +82,13 @@ public final class PhotoFolderHelper implements ISHPhotoFolderHelper
                 !isSDCardReady())
         {
             Log.w(TAG, "SD card is not ready");
-            return;
+            return -1;
         }
 
         // 3. 入力フォルダがなければ終了.
         if (!inDir.exists() || !inDir.isDirectory() || !inDir.canRead()) {
             Log.w(TAG, "inDir isn't available: " + inDir.toString());
-            return;
+            return -1;
         }
 
         // 4. 出力フォルダを作れなければ終了.
@@ -80,19 +97,32 @@ public final class PhotoFolderHelper implements ISHPhotoFolderHelper
         }
         if (!outDir.isDirectory() || !outDir.canWrite()) {
             Log.w(TAG, "outDir isn't available: " + outDir.toString());
-            return;
+            return -1;
         }
 
         // 5. 入力フォルダ内の各ファイルを処理
-        moveToCamera(executionFlag, inDir, outDir);
+        MoveResults results = new MoveResults();
+        int count = moveToCamera(executionFlag, inDir, outDir, results);
+
+        // 6. ギャラリーの一覧を更新する.
+        if (results.movedPath.size() > 0) {
+            // 移動先(追加分)を反映させる.
+            String[] path = results.addedPath.toArray(new String[0]);
+            MediaScannerConnection.scanFile(this.context, path, null, null);
+        }
+
+        return count;
     }
 
-    private void moveToCamera(
+    private int moveToCamera(
             boolean executionFlag,
             File inDir,
-            File outDir)
+            File outDir,
+            MoveResults results)
         throws Exception
     {
+        int count = 0;
+
         // 5. 入力フォルダ内の各ファイルを処理
         Log.i(TAG, "#moveToCamera inDir=" + inDir.toString());
 
@@ -110,7 +140,8 @@ public final class PhotoFolderHelper implements ISHPhotoFolderHelper
                 // 5-1. ファイル名が規則に従っていれば次のファイルへ
                 if (isMoveToTarget(entry)) {
                     try {
-                        movePhotoTo(executionFlag, entry, outDir);
+                        count += movePhotoTo(executionFlag, entry, outDir,
+                                results);
                     } catch (Exception e) {
                         Log.w(TAG, "failed: " + entry.toString(), e);
                     }
@@ -120,21 +151,24 @@ public final class PhotoFolderHelper implements ISHPhotoFolderHelper
 
         // 子フォルダを再帰処理.
         for (File subdir : subdirs) {
-            moveToCamera(executionFlag, subdir, outDir);
+            count += moveToCamera(executionFlag, subdir, outDir, results);
         }
+
+        return count;
     }
 
-    private void movePhotoTo(
+    private int movePhotoTo(
             boolean executionFlag,
             File photoFile,
-            File outDir)
+            File outDir,
+            MoveResults results)
         throws Exception
     {
         // 5-2. EXIFなどから撮影日時(変更後の名称コア文字列)を決定.
         String datetimeString = getCreationDatetimeString(photoFile);
         if (datetimeString == null) {
             Log.w(TAG, "invalid creation time: " + photoFile.toString());
-            return;
+            return 0;
         }
 
         // 5-3. 出力ファイル名を決定
@@ -142,7 +176,7 @@ public final class PhotoFolderHelper implements ISHPhotoFolderHelper
         if (destFile == null) {
             Log.w(TAG, "invalid destination: core=" + datetimeString + " " +
                     photoFile.toString());
-            return;
+            return 0;
         }
 
         // 5-4-2. mtime変更
@@ -161,7 +195,11 @@ public final class PhotoFolderHelper implements ISHPhotoFolderHelper
                 destFile.toString());
         if (executionFlag) {
             photoFile.renameTo(destFile);
+            // 結果を記録しておく.
+            results.add(photoFile, destFile);
         }
+
+        return 1;
     }
 
     private File getInDir() {
