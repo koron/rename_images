@@ -56,7 +56,7 @@ public class MoveToCameraTask
         final Toast toast;
         if (result > 0) {
             toast = Toast.makeText(this.context,
-                    "Process " + result + "images",
+                    "Process " + result + " images",
                     Toast.LENGTH_SHORT);
         } else if (result == 0) {
             toast = Toast.makeText(this.context,
