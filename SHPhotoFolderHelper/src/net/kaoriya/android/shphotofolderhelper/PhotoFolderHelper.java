@@ -9,10 +9,12 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.media.ExifInterface;
 import android.media.MediaScannerConnection;
 import android.os.Environment;
+import android.provider.MediaStore.Images;
 import android.util.Log;
 
 public final class PhotoFolderHelper implements ISHPhotoFolderHelper
@@ -109,6 +111,13 @@ public final class PhotoFolderHelper implements ISHPhotoFolderHelper
             // 移動先(追加分)を反映させる.
             String[] path = results.addedPath.toArray(new String[0]);
             MediaScannerConnection.scanFile(this.context, path, null, null);
+            // 移動元(削除分)を反映させる.
+            ContentResolver cr = this.context.getContentResolver();
+            for (String deleted : results.removedPath) {
+                cr.delete(Images.Media.EXTERNAL_CONTENT_URI,
+                        Images.Media.DATA + "=?",
+                        new String[] { deleted });
+            }
         }
 
         return count;
