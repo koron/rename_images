@@ -4,5 +4,6 @@
   <string name="app_name">SHPhotoFolder Helper</string>
 
   <string name="move_to_camera">Move Photos To Camera</string>
+  <string name="install_hooks">Install Hooks</string>
 
 </resources>
