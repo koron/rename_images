@@ -10,9 +10,20 @@
     android:label="@string/app_name"
     android:icon="@drawable/icon">
 
+    <!--
     <activity
       android:name="HelperActivity"
       android:label="@string/app_name">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+    -->
+
+    <activity
+      android:name=".AssortPhotosActivity"
+      android:label="@string/assort_photos">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
