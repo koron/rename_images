@@ -212,14 +212,14 @@ public final class PhotoFolderHelper implements ISHPhotoFolderHelper
     }
 
     private File getInDir() {
-        // FIXME:
+        // FIXME: make value customizable.
         String name = "DCIM/100SHARP";
         File dir = new File(Environment.getExternalStorageDirectory(), name);
         return dir;
     }
 
     private File getOutDir() {
-        // FIXME:
+        // FIXME: make value customizable.
         String name = "DCIM/Camera";
         File dir = new File(Environment.getExternalStorageDirectory(), name);
         return dir;
@@ -253,6 +253,13 @@ public final class PhotoFolderHelper implements ISHPhotoFolderHelper
         return retval;
     }
 
+    /**
+     * Get photo creation datetime from file.
+     *
+     * 画像ファイルから撮影日時もしくは作成日時を取得し、フォーマットして返す.
+     *
+     * 書式: yyyyMMdd_HHmmss (this.dateFormat)
+     */
     private String getCreationDatetimeString(File photoFile)
         throws IOException
     {
