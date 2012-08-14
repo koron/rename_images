@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -211,22 +212,35 @@ public final class PhotoFolderHelper implements ISHPhotoFolderHelper
         return 1;
     }
 
+    private File getExternalDir()
+    {
+        File exdir = Environment.getExternalStorageDirectory();
+
+        File exdir2 = new File(exdir, "external_sd");
+        if (exdir2.isDirectory() && exdir2.canWrite()) {
+            return exdir2;
+        }
+
+        return exdir;
+    }
+
     private File getInDir() {
         // FIXME: make value customizable.
-        String name = "DCIM/100SHARP";
-        File dir = new File(Environment.getExternalStorageDirectory(), name);
+        //String name = "DCIM/100SHARP";
+        String name = "DCIM/100ANDRO";
+        File dir = new File(getExternalDir(), name);
         return dir;
     }
 
     private File getOutDir() {
         // FIXME: make value customizable.
         String name = "DCIM/Camera";
-        File dir = new File(Environment.getExternalStorageDirectory(), name);
+        File dir = new File(getExternalDir(), name);
         return dir;
     }
 
     private boolean isRequireSDCard(File file) {
-        File ext = Environment.getExternalStorageDirectory();
+        File ext = getExternalDir();
         for (File parent = file.getParentFile(); parent != null;
                 parent = parent.getParentFile())
         {
